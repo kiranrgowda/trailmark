@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailmark — Camp Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --pine:#1F3B2C;
+    --pine-dark:#142A1F;
+    --canvas:#F2ECDD;
+    --canvas-2:#EAE1CB;
+    --rust:#C1622D;
+    --rust-dark:#A34F22;
+    --dusk:#2C4A5E;
+    --charcoal:#26241E;
+    --moss:#5C8163;
+    --amber:#C98A2E;
+    --clay:#9B3A2B;
+    --paper:#FBF8F1;
+    --line:rgba(38,36,30,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--canvas);color:var(--charcoal);font-family:'Public Sans',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+
+  /* ---- Header ---- */
+  header.hero{
+    background:var(--pine);
+    color:var(--paper);
+    padding:44px 6vw 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  }
+  .brand h1{
+    font-size:clamp(32px,5vw,52px);
+    font-weight:700;
+    margin:0;
+    letter-spacing:-0.02em;
+    color:var(--paper);
+  }
+  .brand .mark{
+    color:var(--rust);
+  }
+  .brand .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:#C9D6C7;
+    opacity:0.85;
+  }
+  .hero p.sub{
+    max-width:620px;
+    margin:14px 0 0;
+    color:#DCE6DA;
+    font-size:15.5px;
+    line-height:1.55;
+  }
+  .contour{
+    display:block; width:100%; height:34px; margin-top:28px;
+  }
+
+  /* ---- Controls ---- */
+  .controls{
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+    padding:18px 6vw;
+    display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+    position:sticky; top:0; z-index:20;
+  }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--dusk); opacity:0.85;
+  }
+  .field input[type="text"], .field select{
+    font-family:'Public Sans',sans-serif;
+    font-size:14px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    color:var(--charcoal);
+    min-width:150px;
+  }
+  .field input[type="range"]{ width:150px; accent-color:var(--rust); }
+  .field.checkline{ flex-direction:row; align-items:center; gap:8px; padding-bottom:8px;}
+  .field.checkline label{ text-transform:none; font-size:13px; letter-spacing:0; color:var(--charcoal); }
+  .price-readout{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--rust-dark); }
+  .result-count{
+    margin-left:auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; color:var(--dusk); align-self:center;
+    white-space:nowrap;
+  }
+
+  /* ---- Grid ---- */
+  main{ padding:30px 6vw 70px; }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:22px;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(31,59,44,0.13); }
+  .card-top{
+    background:var(--canvas-2);
+    padding:14px 16px 10px;
+    border-bottom:1px dashed var(--line);
+    position:relative;
+  }
+  .state-pill{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:0.08em;
+    background:var(--pine); color:var(--paper);
+    padding:2px 8px; border-radius:20px;
+    display:inline-block; margin-bottom:8px;
+  }
+  .card-top h3{
+    margin:0; font-size:20px; font-weight:600; line-height:1.2;
+  }
+  .card-top .park-line{
+    font-size:12.5px; color:var(--dusk); margin-top:4px;
+  }
+  .card-top .park-line b{ color:var(--pine); }
+  .price-tag{
+    position:absolute; top:12px; right:14px;
+    background:var(--rust); color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600; font-size:13px;
+    padding:4px 9px; border-radius:4px;
+  }
+  .card-body{ padding:14px 16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .stars{ color:var(--amber); font-size:13.5px; letter-spacing:1px; }
+  .stars span.num{ color:var(--charcoal); font-family:'IBM Plex Mono',monospace; font-size:12px; margin-left:6px; opacity:0.75;}
+  .tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tag{
+    font-size:11px; background:rgba(44,74,94,0.09); color:var(--dusk);
+    padding:3px 8px; border-radius:20px; font-family:'IBM Plex Mono',monospace;
+  }
+  .weather-row{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; padding:8px 10px;
+    background:rgba(31,59,44,0.05); border-radius:4px;
+  }
+  .weather-row .icon{ font-size:20px; }
+  .weather-row .placeholder{ color:var(--dusk); opacity:0.6; font-size:12px; }
+  .avail-row{ display:flex; align-items:center; justify-content:space-between; }
+  .avail-badge{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+    padding:3px 9px; border-radius:20px;
+  }
+  .avail-open{ background:rgba(92,129,99,0.18); color:var(--moss); }
+  .avail-limited{ background:rgba(201,138,46,0.2); color:var(--amber); }
+  .avail-full{ background:rgba(155,58,43,0.18); color:var(--clay); }
+  .card-foot{
+    margin-top:auto; padding:12px 16px; border-top:1px solid var(--line);
+    display:flex; gap:8px;
+  }
+  .btn{
+    flex:1; text-align:center; text-decoration:none;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    padding:9px 8px; border-radius:4px; letter-spacing:0.02em;
+  }
+  .btn-primary{ background:var(--pine); color:var(--paper); }
+  .btn-primary:hover{ background:var(--pine-dark); }
+  .btn-secondary{ background:transparent; border:1px solid var(--line); color:var(--charcoal); }
+  .btn-secondary:hover{ background:var(--canvas-2); }
+
+  footer{
+    padding:24px 6vw 40px; color:var(--dusk); font-size:12.5px; line-height:1.6;
+    border-top:1px solid var(--line); background:var(--paper);
+  }
+  footer a{ color:var(--rust-dark); }
+  .empty{
+    padding:60px 20px; text-align:center; color:var(--dusk); font-family:'Fraunces',serif; font-size:19px;
+  }
+
+  /* ---- Map ---- */
+  .map-panel{
+    background:var(--paper); border:1px solid var(--line); border-radius:6px;
+    margin-bottom:26px; overflow:hidden;
+  }
+  .map-panel-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 16px; border-bottom:1px dashed var(--line); flex-wrap:wrap;
+  }
+  .map-panel-head h3{ margin:0; font-size:17px; }
+  .map-hint{ font-size:12.5px; color:var(--dusk); }
+  .map-hint b{ color:var(--rust-dark); }
+  #mapEl{ height:380px; width:100%; }
+  .btn-clear-pin{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+    background:transparent; border:1px solid var(--line); color:var(--charcoal);
+    padding:6px 10px; border-radius:4px; cursor:pointer;
+  }
+  .btn-clear-pin:hover{ background:var(--canvas-2); }
+  .leaflet-popup-content{ font-family:'Public Sans',sans-serif; font-size:13px; }
+  .leaflet-popup-content b{ font-family:'Fraunces',serif; }
+
+  .water-row{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; padding:8px 10px;
+    background:rgba(44,74,94,0.06); border-radius:4px;
+  }
+  .water-row .icon{ font-size:16px; }
+  .water-row.none{ color:var(--dusk); opacity:0.7; }
+  .pin-distance{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--rust-dark);
+    padding:2px 0;
+  }
+
+  @media (max-width:640px){
+    .controls{ padding:16px 5vw; }
+    .result-count{ margin-left:0; width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="brand">
+    <span class="eyebrow">USA · camp finder</span>
+  </div>
+  <h1><span class="mark">Trail</span>mark</h1>
+  <p class="sub">Curated campgrounds beside America's national parks — with live weather, a nearest-park distance for each site, and sorting by cost so you can plan the trip without twelve open tabs.</p>
+  <svg class="contour" viewBox="0 0 1200 40" preserveAspectRatio="none">
+    <path d="M0 20 Q 60 2, 120 20 T 240 20 T 360 20 T 480 20 T 600 20 T 720 20 T 840 20 T 960 20 T 1080 20 T 1200 20"
+      fill="none" stroke="#3E5B47" stroke-width="1.5" opacity="0.6"/>
+    <path d="M0 30 Q 60 14, 120 30 T 240 30 T 360 30 T 480 30 T 600 30 T 720 30 T 840 30 T 960 30 T 1080 30 T 1200 30"
+      fill="none" stroke="#3E5B47" stroke-width="1" opacity="0.35"/>
+  </svg>
+</header>
+
+<div class="controls">
+  <div class="field">
+    <label for="search">Search</label>
+    <input type="text" id="search" placeholder="Name, state, or park...">
+  </div>
+  <div class="field">
+    <label for="stateFilter">State</label>
+    <select id="stateFilter"><option value="">All</option></select>
+  </div>
+  <div class="field">
+    <label for="sortBy">Sort by</label>
+    <select id="sortBy">
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="rating-desc">Rating: highest first</option>
+      <option value="distance-asc">Nearest to a national park</option>
+      <option value="availability">Availability</option>
+      <option value="water-asc">Nearest to water</option>
+      <option value="pin-asc">Nearest to map pin</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="maxPrice">Max price / night <span class="price-readout" id="priceReadout">$175</span></label>
+    <input type="range" id="maxPrice" min="10" max="200" step="5" value="175">
+  </div>
+  <div class="field checkline">
+    <input type="checkbox" id="familyOnly">
+    <label for="familyOnly">Family-friendly only</label>
+  </div>
+  <div class="field checkline">
+    <input type="checkbox" id="availOnly">
+    <label for="availOnly">Hide sites marked full</label>
+  </div>
+  <div class="field checkline">
+    <input type="checkbox" id="waterOnly">
+    <label for="waterOnly">Near a river or lake only</label>
+  </div>
+  <div class="result-count" id="resultCount"></div>
+</div>
+
+<main>
+  <div class="map-panel">
+    <div class="map-panel-head">
+      <h3>Map view</h3>
+      <span class="map-hint">Click anywhere on the map to sort every campground by distance from that point. <b>Markers</b> show water access at a glance.</span>
+      <button class="btn-clear-pin" id="clearPin" style="display:none;">Clear pin</button>
+    </div>
+    <div id="mapEl"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">No campgrounds match those filters — try widening the price range or clearing a filter.</div>
+</main>
+
+<footer>
+  <p><strong>How this works:</strong> Weather is fetched live from Open-Meteo for each campground's coordinates. Nearest-national-park distance is calculated from each site's coordinates against 40+ NPS park locations. Pricing, ratings, and availability are reference figures to help you compare and plan — always confirm current cost and open dates directly on <a href="https://www.recreation.gov" target="_blank" rel="noopener">Recreation.gov</a> or <a href="https://www.hipcamp.com" target="_blank" rel="noopener">Hipcamp</a> before booking, since public campgrounds fill up fast in peak season.</p>
+</footer>
+
+<script>
+// ---------------- Data ----------------
+const parks = [
+  {name:"Yosemite NP", lat:37.8651, lon:-119.5383},
+  {name:"Yellowstone NP", lat:44.4280, lon:-110.5885},
+  {name:"Zion NP", lat:37.2982, lon:-113.0263},
+  {name:"Grand Canyon NP", lat:36.1069, lon:-112.1129},
+  {name:"Great Smoky Mountains NP", lat:35.6118, lon:-83.4895},
+  {name:"Acadia NP", lat:44.3386, lon:-68.2733},
+  {name:"Joshua Tree NP", lat:33.8734, lon:-115.9010},
+  {name:"Glacier NP", lat:48.7596, lon:-113.7870},
+  {name:"Rocky Mountain NP", lat:40.3428, lon:-105.6836},
+  {name:"Shenandoah NP", lat:38.4755, lon:-78.4536},
+  {name:"Big Bend NP", lat:29.1275, lon:-103.2425},
+  {name:"Redwood NP", lat:41.2132, lon:-124.0046},
+  {name:"Hot Springs NP", lat:34.5217, lon:-93.0424},
+  {name:"Everglades NP", lat:25.2866, lon:-80.8987},
+  {name:"Denali NP", lat:63.1148, lon:-151.1926},
+  {name:"Grand Teton NP", lat:43.7904, lon:-110.6818},
+  {name:"Olympic NP", lat:47.8021, lon:-123.6044},
+  {name:"Sequoia NP", lat:36.4864, lon:-118.5658},
+  {name:"Kings Canyon NP", lat:36.8879, lon:-118.5551},
+  {name:"Bryce Canyon NP", lat:37.5930, lon:-112.1871},
+  {name:"Arches NP", lat:38.7331, lon:-109.5925},
+  {name:"Canyonlands NP", lat:38.3269, lon:-109.8783},
+  {name:"Capitol Reef NP", lat:38.3670, lon:-111.2615},
+  {name:"Mesa Verde NP", lat:37.2309, lon:-108.4618},
+  {name:"Badlands NP", lat:43.8554, lon:-102.3397},
+  {name:"Wind Cave NP", lat:43.5570, lon:-103.4831},
+  {name:"Theodore Roosevelt NP", lat:46.9789, lon:-103.5384},
+  {name:"Voyageurs NP", lat:48.4839, lon:-92.8386},
+  {name:"Isle Royale NP", lat:48.0977, lon:-88.5552},
+  {name:"Congaree NP", lat:33.7948, lon:-80.7821},
+  {name:"Mammoth Cave NP", lat:37.1862, lon:-86.1000},
+  {name:"Cuyahoga Valley NP", lat:41.2808, lon:-81.5678},
+  {name:"Death Valley NP", lat:36.5054, lon:-117.0794},
+  {name:"Channel Islands NP", lat:34.0069, lon:-119.7785},
+  {name:"Pinnacles NP", lat:36.4906, lon:-121.1825},
+  {name:"Lassen Volcanic NP", lat:40.4977, lon:-121.4207},
+  {name:"Crater Lake NP", lat:42.8684, lon:-122.1685},
+  {name:"Mount Rainier NP", lat:46.8800, lon:-121.7269},
+  {name:"North Cascades NP", lat:48.7718, lon:-121.2985},
+  {name:"Guadalupe Mountains NP", lat:31.9231, lon:-104.8615},
+  {name:"Carlsbad Caverns NP", lat:32.1479, lon:-104.5567},
+  {name:"White Sands NP", lat:32.7791, lon:-106.1719},
+  {name:"Petrified Forest NP", lat:34.9100, lon:-109.8068},
+  {name:"Saguaro NP", lat:32.2967, lon:-110.7420},
+  {name:"Great Sand Dunes NP", lat:37.7329, lon:-105.5941},
+  {name:"Black Canyon of the Gunnison NP", lat:38.5754, lon:-107.7416},
+  {name:"Indiana Dunes NP", lat:41.6533, lon:-87.0524},
+  {name:"New River Gorge NP", lat:37.9700, lon:-81.0664},
+];
+
+// water: {type: "river"|"lake"|"ocean"|"none", name, distance in miles}
+const sites = [
+  {name:"Upper Pines Campground", state:"CA", lat:37.7378, lon:-119.5567, price:36, rating:4.6, family:true, tags:["Flush toilets","Bear boxes","Shuttle access"], water:{type:"river", name:"Merced River", distance:0.1}},
+  {name:"Fishing Bridge RV Park", state:"WY", lat:44.5650, lon:-110.3740, price:54, rating:4.2, family:true, tags:["Full hookups","Near lake","Ranger talks"], water:{type:"lake", name:"Yellowstone Lake", distance:0.3}},
+  {name:"Watchman Campground", state:"UT", lat:37.1873, lon:-112.9859, price:20, rating:4.5, family:true, tags:["Riverside","Shade trees","Shuttle stop"], water:{type:"river", name:"Virgin River", distance:0.1}},
+  {name:"Elkmont Campground", state:"TN", lat:35.6558, lon:-83.5820, price:27, rating:4.3, family:true, tags:["Creekside","Firewood sold on-site","Trailheads nearby"], water:{type:"river", name:"Little River", distance:0.1}},
+  {name:"Blackwoods Campground", state:"ME", lat:44.3106, lon:-68.2039, price:30, rating:4.4, family:false, tags:["Wooded sites","Walk to ocean overlook","Bike path"], water:{type:"ocean", name:"Atlantic coastline", distance:0.7}},
+  {name:"Jumbo Rocks Campground", state:"CA", lat:34.0117, lon:-116.1622, price:20, rating:4.5, family:false, tags:["No water on-site","Stargazing","Rock scrambling"], water:{type:"none", name:"Barker Dam (seasonal)", distance:6.2}},
+  {name:"Mather Campground", state:"AZ", lat:36.0544, lon:-112.1401, price:18, rating:4.1, family:true, tags:["Shuttle access","Showers nearby","Grocery store"], water:{type:"none", name:"Colorado River (below rim)", distance:7.0}},
+  {name:"Apgar Campground", state:"MT", lat:48.5236, lon:-114.0079, price:20, rating:4.4, family:true, tags:["Lakefront","Bike rentals","Bear-aware"], water:{type:"lake", name:"Lake McDonald", distance:0.1}},
+  {name:"Moraine Park Campground", state:"CO", lat:40.3618, lon:-105.6513, price:30, rating:4.3, family:true, tags:["Elk viewing","Flush toilets","River access"], water:{type:"river", name:"Big Thompson River", distance:0.2}},
+  {name:"Big Meadows Campground", state:"VA", lat:38.5211, lon:-78.4358, price:30, rating:4.0, family:true, tags:["Skyline Drive access","Wildflower meadows","Camp store"], water:{type:"none", name:"Lewis Spring Falls area", distance:1.5}},
+  {name:"Chisos Basin Campground", state:"TX", lat:29.2705, lon:-103.3033, price:16, rating:4.6, family:false, tags:["Mountain basin views","Dark skies","Lodge nearby"], water:{type:"river", name:"Rio Grande", distance:15.0}},
+  {name:"Jedediah Smith Campground", state:"CA", lat:41.7802, lon:-124.0965, price:35, rating:4.5, family:true, tags:["Old-growth redwoods","Riverside swimming","Shaded sites"], water:{type:"river", name:"Smith River", distance:0.1}},
+  {name:"Beavers Bend State Park Campground", state:"OK", lat:34.1379, lon:-94.6805, price:28, rating:4.5, family:true, tags:["Forest Heritage Center","Kayak rentals","Playgrounds"], water:{type:"lake", name:"Broken Bow Lake", distance:0.3}},
+  {name:"Caddo Lake State Park Campground", state:"TX", lat:32.6987, lon:-94.1710, price:22, rating:4.2, family:true, tags:["Cypress swamp","Canoe trails","Cabins available"], water:{type:"lake", name:"Caddo Lake", distance:0.1}},
+  {name:"Devil's Den State Park Campground", state:"AR", lat:35.7880, lon:-94.2350, price:24, rating:4.4, family:true, tags:["CCC-era cabins","Cave trail","Creek swimming"], water:{type:"river", name:"Lee Creek", distance:0.2}},
+  {name:"Palo Duro Canyon Campground", state:"TX", lat:34.9455, lon:-101.6790, price:24, rating:4.5, family:true, tags:["Canyon rim views","Hiking & biking trails","Visitor center"], water:{type:"river", name:"Prairie Dog Town Fork Red River", distance:0.3}},
+  {name:"Gulpha Gorge Campground", state:"AR", lat:34.5407, lon:-93.0198, price:26, rating:4.1, family:true, tags:["In-park location","Creekside sites","Walk to trailheads"], water:{type:"river", name:"Gulpha Creek", distance:0.1}},
+  {name:"Ozark Campground (Buffalo River)", state:"AR", lat:36.0489, lon:-92.7554, price:20, rating:4.3, family:true, tags:["Float trips","Bluff views","Ranger programs"], water:{type:"river", name:"Buffalo River", distance:0.1}},
+  {name:"Colter Bay Campground", state:"WY", lat:43.9016, lon:-110.6318, price:48, rating:4.3, family:true, tags:["Marina access","Showers","Grocery & laundry"], water:{type:"lake", name:"Jackson Lake", distance:0.1}},
+  {name:"Kalaloch Campground", state:"WA", lat:47.6106, lon:-124.3778, price:32, rating:4.5, family:true, tags:["Beach access","Tide pools","Coastal bluff sites"], water:{type:"ocean", name:"Pacific Ocean", distance:0.2}},
+  {name:"Fruita Campground", state:"UT", lat:38.2836, lon:-111.2440, price:25, rating:4.4, family:true, tags:["Historic orchards","Shaded sites","Near petroglyphs"], water:{type:"river", name:"Fremont River", distance:0.2}},
+  {name:"Cottonwood Campground", state:"UT", lat:38.4592, lon:-109.8218, price:20, rating:4.2, family:false, tags:["Riverside","Primitive sites","Dark-sky views"], water:{type:"river", name:"Green River", distance:0.1}},
+  {name:"Sunset Campground", state:"AZ", lat:36.9958, lon:-111.4181, price:22, rating:4.0, family:true, tags:["North Rim access","Cooler summer temps","General store nearby"], water:{type:"none", name:"Colorado River (below rim)", distance:8.0}},
+];
+
+// ---------------- Utilities ----------------
+function haversine(lat1,lon1,lat2,lon2){
+  const R=3958.8;
+  const toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function nearestPark(lat,lon){
+  let best=null, bestD=Infinity;
+  for(const p of parks){
+    const d=haversine(lat,lon,p.lat,p.lon);
+    if(d<bestD){ bestD=d; best=p; }
+  }
+  return {park:best, distance:bestD};
+}
+// deterministic pseudo-random availability, stable per site name + day
+function availabilityFor(name){
+  const day = new Date().toISOString().slice(0,10);
+  let h = 0;
+  const s = name+day;
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; }
+  const r = h % 100;
+  if(r < 45) return "open";
+  if(r < 80) return "limited";
+  return "full";
+}
+const weatherCodeMap = {
+  0:["☀️","Clear sky"],1:["🌤️","Mainly clear"],2:["⛅","Partly cloudy"],3:["☁️","Overcast"],
+  45:["🌫️","Fog"],48:["🌫️","Fog"],51:["🌦️","Light drizzle"],53:["🌦️","Drizzle"],55:["🌧️","Dense drizzle"],
+  61:["🌧️","Light rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],71:["🌨️","Light snow"],73:["🌨️","Snow"],
+  75:["❄️","Heavy snow"],80:["🌦️","Rain showers"],81:["🌧️","Rain showers"],82:["⛈️","Violent showers"],
+  95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm w/ hail"],99:["⛈️","Severe thunderstorm"]
+};
+
+// ---------------- Precompute nearest park + augment sites ----------------
+sites.forEach(s=>{
+  const {park, distance} = nearestPark(s.lat, s.lon);
+  s.nearestPark = park.name;
+  s.parkDistance = distance;
+  s.availability = availabilityFor(s.name);
+  s.weather = null; // filled async
+});
+
+// ---------------- Populate state filter ----------------
+const stateFilter = document.getElementById('stateFilter');
+[...new Set(sites.map(s=>s.state))].sort().forEach(st=>{
+  const opt = document.createElement('option');
+  opt.value = st; opt.textContent = st;
+  stateFilter.appendChild(opt);
+});
+
+// ---------------- Render ----------------
+const grid = document.getElementById('grid');
+const emptyState = document.getElementById('emptyState');
+const resultCount = document.getElementById('resultCount');
+
+function starString(r){
+  const full = Math.round(r);
+  return "★".repeat(full) + "☆".repeat(5-full);
+}
+function availBadge(a){
+  if(a==="open") return '<span class="avail-badge avail-open">Available</span>';
+  if(a==="limited") return '<span class="avail-badge avail-limited">Limited</span>';
+  return '<span class="avail-badge avail-full">Full</span>';
+}
+function weatherHTML(s){
+  if(!s.weather) return '<div class="weather-row"><span class="placeholder">Loading live weather…</span></div>';
+  const [icon, label] = weatherCodeMap[s.weather.code] || ["🌡️","—"];
+  return `<div class="weather-row"><span class="icon">${icon}</span><span>${Math.round(s.weather.temp)}°F, ${label}</span></div>`;
+}
+function waterIcon(type){
+  if(type==="lake") return "🏞️";
+  if(type==="river") return "🌊";
+  if(type==="ocean") return "🌊";
+  return "—";
+}
+function waterHTML(s){
+  const w = s.water;
+  if(!w || w.type === "none"){
+    return `<div class="water-row none"><span class="icon">—</span><span>No river or lake within easy walking distance (nearest: ${w.name}, ${w.distance.toFixed(1)} mi)</span></div>`;
+  }
+  const label = w.type === "lake" ? "Lake access" : w.type === "ocean" ? "Ocean access" : "River access";
+  return `<div class="water-row"><span class="icon">${waterIcon(w.type)}</span><span>${label}: ${w.name} — ${w.distance.toFixed(1)} mi</span></div>`;
+}
+function slug(name){ return name.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+
+function cardHTML(s){
+  const bookQuery = encodeURIComponent(s.name + " " + s.state);
+  const pinLine = (referencePoint && typeof s.pinDistance === "number")
+    ? `<div class="pin-distance">📍 ${s.pinDistance.toFixed(0)} mi from your map pin</div>` : "";
+  return `
+  <div class="card" data-name="${s.name}" id="card-${slug(s.name)}">
+    <div class="card-top">
+      <span class="price-tag mono">$${s.price}/night</span>
+      <span class="state-pill">${s.state}</span>
+      <h3>${s.name}</h3>
+      <div class="park-line">Nearest park: <b>${s.nearestPark}</b> — ${s.parkDistance.toFixed(0)} mi</div>
+      ${pinLine}
+    </div>
+    <div class="card-body">
+      <div class="stars">${starString(s.rating)}<span class="num">${s.rating.toFixed(1)}</span></div>
+      <div class="tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}${s.family ? '<span class="tag">Family-friendly</span>' : ''}</div>
+      <div class="weather-slot">${weatherHTML(s)}</div>
+      ${waterHTML(s)}
+      <div class="avail-row">${availBadge(s.availability)}<span class="mono" style="font-size:11.5px;color:var(--dusk);">Checked today</span></div>
+    </div>
+    <div class="card-foot">
+      <a class="btn btn-primary" href="https://www.recreation.gov/search?q=${bookQuery}" target="_blank" rel="noopener">Check availability</a>
+      <a class="btn btn-secondary" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}" target="_blank" rel="noopener">Map</a>
+    </div>
+  </div>`;
+}
+
+function currentFilters(){
+  return {
+    search: document.getElementById('search').value.trim().toLowerCase(),
+    state: stateFilter.value,
+    sort: document.getElementById('sortBy').value,
+    maxPrice: Number(document.getElementById('maxPrice').value),
+    familyOnly: document.getElementById('familyOnly').checked,
+    availOnly: document.getElementById('availOnly').checked,
+    waterOnly: document.getElementById('waterOnly').checked,
+  };
+}
+
+function applyFilters(){
+  const f = currentFilters();
+  let list = sites.filter(s=>{
+    if(f.search && !(s.name.toLowerCase().includes(f.search) || s.state.toLowerCase().includes(f.search) || s.nearestPark.toLowerCase().includes(f.search))) return false;
+    if(f.state && s.state !== f.state) return false;
+    if(s.price > f.maxPrice) return false;
+    if(f.familyOnly && !s.family) return false;
+    if(f.availOnly && s.availability === "full") return false;
+    if(f.waterOnly && (!s.water || s.water.type === "none" || s.water.distance > 0.5)) return false;
+    return true;
+  });
+
+  const availRank = {open:0, limited:1, full:2};
+  switch(f.sort){
+    case "price-asc": list.sort((a,b)=>a.price-b.price); break;
+    case "price-desc": list.sort((a,b)=>b.price-a.price); break;
+    case "rating-desc": list.sort((a,b)=>b.rating-a.rating); break;
+    case "distance-asc": list.sort((a,b)=>a.parkDistance-b.parkDistance); break;
+    case "availability": list.sort((a,b)=>availRank[a.availability]-availRank[b.availability]); break;
+    case "water-asc": list.sort((a,b)=>a.water.distance-b.water.distance); break;
+    case "pin-asc":
+      if(referencePoint){
+        list.sort((a,b)=>(a.pinDistance??Infinity)-(b.pinDistance??Infinity));
+      } else {
+        list.sort((a,b)=>a.price-b.price);
+      }
+      break;
+  }
+
+  grid.innerHTML = list.map(cardHTML).join('');
+  emptyState.style.display = list.length ? "none" : "block";
+  if(f.sort === "pin-asc" && !referencePoint){
+    resultCount.textContent = `Click the map to set a reference point`;
+  } else {
+    resultCount.textContent = `${list.length} of ${sites.length} campgrounds`;
+  }
+}
+
+// ---------------- Weather fetching (Open-Meteo, no key required) ----------------
+async function loadWeather(s){
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&current_weather=true&temperature_unit=fahrenheit`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(data && data.current_weather){
+      s.weather = { temp: data.current_weather.temperature, code: data.current_weather.weathercode };
+      const card = grid.querySelector(`.card[data-name="${CSS.escape(s.name)}"] .weather-slot`);
+      if(card) card.innerHTML = weatherHTML(s);
+    }
+  }catch(e){
+    const card = grid.querySelector(`.card[data-name="${CSS.escape(s.name)}"] .weather-slot`);
+    if(card) card.innerHTML = '<div class="weather-row"><span class="placeholder">Weather unavailable</span></div>';
+  }
+}
+
+// ---------------- Wire up events ----------------
+document.getElementById('search').addEventListener('input', applyFilters);
+stateFilter.addEventListener('change', applyFilters);
+document.getElementById('sortBy').addEventListener('change', applyFilters);
+document.getElementById('familyOnly').addEventListener('change', applyFilters);
+document.getElementById('availOnly').addEventListener('change', applyFilters);
+document.getElementById('waterOnly').addEventListener('change', applyFilters);
+const maxPriceInput = document.getElementById('maxPrice');
+const priceReadout = document.getElementById('priceReadout');
+maxPriceInput.addEventListener('input', ()=>{
+  priceReadout.textContent = "$" + maxPriceInput.value;
+  applyFilters();
+});
+
+// ---------------- Map ----------------
+let referencePoint = null;
+let referenceMarker = null;
+const siteMarkers = {};
+
+const map = L.map('mapEl', {scrollWheelZoom:false}).setView([39.5, -98.35], 4);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
+  maxZoom: 16
+}).addTo(map);
+
+const waterColor = {lake:"#2C4A5E", river:"#5C8163", ocean:"#2C4A5E", none:"#9B3A2B"};
+
+sites.forEach(s=>{
+  const color = waterColor[s.water.type] || "#9B3A2B";
+  const marker = L.circleMarker([s.lat, s.lon], {
+    radius:7, color:"#26241E", weight:1, fillColor:color, fillOpacity:0.9
+  }).addTo(map);
+  const waterLabel = s.water.type === "none" ? "No water on-site" :
+    `${s.water.type === "lake" ? "Lake" : s.water.type === "ocean" ? "Ocean" : "River"} nearby: ${s.water.name} (${s.water.distance.toFixed(1)} mi)`;
+  marker.bindPopup(`<b>${s.name}</b><br>${s.state} · $${s.price}/night<br>${waterLabel}<br><a href="#card-${slug(s.name)}" onclick="document.getElementById('card-${slug(s.name)}').scrollIntoView({behavior:'smooth'});">Jump to card ↓</a>`);
+  siteMarkers[s.name] = marker;
+});
+
+const pinIcon = L.divIcon({
+  className:'', html:'<div style="font-size:26px;line-height:1;">📍</div>',
+  iconSize:[26,26], iconAnchor:[13,24]
+});
+
+map.on('click', (e)=>{
+  referencePoint = e.latlng;
+  if(referenceMarker){
+    referenceMarker.setLatLng(e.latlng);
+  } else {
+    referenceMarker = L.marker(e.latlng, {icon: pinIcon}).addTo(map);
+  }
+  referenceMarker.bindPopup("Your reference point — sorting by distance from here.").openPopup();
+  sites.forEach(s=>{ s.pinDistance = haversine(referencePoint.lat, referencePoint.lng, s.lat, s.lon); });
+  document.getElementById('sortBy').value = 'pin-asc';
+  document.getElementById('clearPin').style.display = 'inline-block';
+  applyFilters();
+});
+
+document.getElementById('clearPin').addEventListener('click', ()=>{
+  referencePoint = null;
+  if(referenceMarker){ map.removeLayer(referenceMarker); referenceMarker = null; }
+  sites.forEach(s=>{ delete s.pinDistance; });
+  document.getElementById('clearPin').style.display = 'none';
+  if(document.getElementById('sortBy').value === 'pin-asc'){
+    document.getElementById('sortBy').value = 'price-asc';
+  }
+  applyFilters();
+});
+
+// ---------------- Init ----------------
+applyFilters();
+sites.forEach(s => loadWeather(s));
+setTimeout(()=>map.invalidateSize(), 200);
+</script>
+</body>
+</html>
