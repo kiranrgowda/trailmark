@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailmark — Packing Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--pine:#000000;
+--pine-dark:#000000;
+--canvas:#FFFFFF;
+--canvas-2:#F0F0F0;
+--rust:#000000;
+--rust-dark:#000000;
+--dusk:#333333;
+--charcoal:#000000;
+--amber:#000000;
+--paper:#FFFFFF;
+--line:rgba(0,0,0,0.16);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--canvas);color:var(--charcoal);font-family:'Public Sans',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+/* ---- Header (matches index.html) ---- */
+header.hero{
+background:var(--pine);
+color:var(--paper);
+padding:44px 6vw 30px;
+position:relative;
+overflow:hidden;
+}
+.brand{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.brand h1{
+font-size:clamp(32px,5vw,52px); font-weight:700; margin:0;
+letter-spacing:-0.02em; color:var(--paper);
+}
+.brand .mark{ color:var(--rust); }
+.eyebrow{
+font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.18em;
+text-transform:uppercase; color:#CCCCCC; opacity:0.85;
+}
+header.hero p.sub{
+max-width:620px; margin:14px 0 0; color:#DDDDDD; font-size:15.5px; line-height:1.55;
+position:relative; z-index:1;
+}
+.contour{ display:block; width:100%; height:34px; margin-top:28px; position:relative; z-index:1; }
+header.hero .hero-photo{
+position:absolute; inset:0; background-size:cover; background-position:center 62%;
+opacity:0; transition:opacity 1.4s ease; z-index:0;
+}
+header.hero.bg-loaded .hero-photo{ opacity:1; }
+header.hero .hero-scrim{
+position:absolute; inset:0; z-index:0;
+background:linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.72) 100%);
+}
+header.hero .brand{ position:relative; z-index:1; }
+/* ---- Tabs ---- */
+.site-tabs{
+background:var(--pine); display:flex; gap:2px; padding:0 6vw;
+border-bottom:1px solid rgba(255,255,255,0.15); position:relative; z-index:1;
+}
+.site-tabs a{
+font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
+color:#BBBBBB; text-decoration:none; padding:13px 18px;
+border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease;
+}
+.site-tabs a:hover{ color:#FFFFFF; }
+.site-tabs a.active{ color:#FFFFFF; border-bottom-color:var(--rust); }
+/* ---- Season filter ---- */
+.season-bar{
+background:var(--paper); border-bottom:1px solid var(--line);
+padding:18px 6vw; display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+position:sticky; top:0; z-index:20;
+}
+.season-bar .label{
+font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.09em;
+text-transform:uppercase; color:var(--dusk); opacity:0.85; margin-right:4px;
+}
+.season-btn{
+font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600;
+padding:8px 14px; border-radius:20px; border:1px solid var(--line);
+background:#fff; color:var(--charcoal); cursor:pointer; letter-spacing:0.02em;
+display:inline-flex; align-items:center; gap:6px;
+transition:background .15s ease, color .15s ease;
+}
+.season-btn:hover{ background:var(--canvas-2); }
+.season-btn.active{ background:var(--pine); color:var(--paper); border-color:var(--pine); }
+.progress-readout{
+margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--dusk);
+white-space:nowrap;
+}
+.reset-btn{
+font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+background:transparent; border:1px solid var(--line); color:var(--charcoal);
+padding:6px 11px; border-radius:4px; cursor:pointer;
+}
+.reset-btn:hover{ background:var(--canvas-2); }
+/* ---- Main ---- */
+main{ padding:30px 6vw 70px; }
+.intro-note{
+font-size:14px; color:var(--dusk); max-width:760px; margin:0 0 26px; line-height:1.6;
+}
+.intro-note b{ color:var(--charcoal); }
+.categories{
+display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px;
+}
+.cat-card{
+background:var(--paper); border:1px solid var(--line); border-radius:6px; overflow:hidden;
+display:flex; flex-direction:column;
+}
+.cat-head{
+background:var(--canvas-2); padding:14px 16px; border-bottom:1px dashed var(--line);
+display:flex; align-items:center; gap:10px;
+}
+.cat-head .icon{ font-size:20px; }
+.cat-head h3{ margin:0; font-size:18px; font-weight:600; }
+.cat-count{
+margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--dusk);
+}
+.item-list{ list-style:none; margin:0; padding:8px 6px; }
+.item-row{
+display:flex; align-items:flex-start; gap:10px;
+padding:9px 10px; border-radius:4px;
+}
+.item-row:hover{ background:var(--canvas-2); }
+.item-row input[type="checkbox"]{
+margin-top:3px; width:16px; height:16px; accent-color:var(--rust); cursor:pointer; flex-shrink:0;
+}
+.item-text{ flex:1; }
+.item-name{ font-size:14px; line-height:1.4; cursor:pointer; }
+.item-row.checked .item-name{ text-decoration:line-through; color:var(--dusk); opacity:0.55; }
+.item-seasons{ display:flex; gap:5px; margin-top:4px; flex-wrap:wrap; }
+.season-chip{
+font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.04em;
+padding:1.5px 6px; border-radius:20px; background:rgba(0,0,0,0.07); color:var(--dusk);
+}
+.essential-chip{
+font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.04em;
+padding:1.5px 6px; border-radius:20px; background:var(--rust); color:#fff;
+}
+.item-row[data-hidden="true"]{ display:none; }
+footer{
+padding:24px 6vw 40px; color:var(--dusk); font-size:12.5px; line-height:1.6;
+border-top:1px solid var(--line); background:var(--paper);
+}
+footer a{ color:var(--rust-dark); }
+@media (max-width:640px){
+.season-bar{ padding:14px 5vw; }
+.progress-readout{ margin-left:0; width:100%; }
+main{ padding:24px 5vw 60px; }
+}
+</style>
+</head>
+<body>
+<header class="hero" id="heroHeader">
+<div class="hero-photo" id="heroPhoto"></div>
+<div class="hero-scrim"></div>
+<div class="brand">
+<span class="eyebrow">USA · camp finder</span>
+</div>
+<h1><span class="mark">Trail</span>mark</h1>
+<p class="sub">Everything worth throwing in the car before you go — organized by category, filterable by season, and checked off as you pack.</p>
+<svg class="contour" viewBox="0 0 1200 40" preserveAspectRatio="none">
+<path d="M0 20 Q 60 2, 120 20 T 240 20 T 360 20 T 480 20 T 600 20 T 720 20 T 840 20 T 960 20 T 1080 20 T 1200 20"
+fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.6"/>
+<path d="M0 30 Q 60 14, 120 30 T 240 30 T 360 30 T 480 30 T 600 30 T 720 30 T 840 30 T 960 30 T 1080 30 T 1200 30"
+fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.35"/>
+</svg>
+</header>
+<nav class="site-tabs">
+<a href="index.html">Campgrounds</a>
+<a href="packing.html" class="active">Packing Checklist</a>
+</nav>
+<div class="season-bar">
+<span class="label">Season</span>
+<button class="season-btn active" data-season="all">🌐 All year</button>
+<button class="season-btn" data-season="spring">🌱 Spring</button>
+<button class="season-btn" data-season="summer">☀️ Summer</button>
+<button class="season-btn" data-season="fall">🍂 Fall</button>
+<button class="season-btn" data-season="winter">❄️ Winter</button>
+<button class="reset-btn" id="resetChecks">Reset checklist</button>
+<span class="progress-readout" id="progressReadout"></span>
+</div>
+<main>
+<p class="intro-note">Items marked <span class="essential-chip" style="position:relative;top:2px;">Core</span> belong in the car for any trip, any time of year. Switch the season filter above to layer on the extras worth adding for spring mud, summer heat, fall temperature swings, or winter cold — <b>your checkmarks are saved in this browser</b>, so it's safe to close the tab mid-pack.</p>
+<div class="categories" id="categories"></div>
+</main>
+<footer>
+<p>This checklist is a general starting point — always tailor it to the specific campground (some are walk-in/tent-only with no hookups, others allow RVs with full hookups) and to current conditions. Check the <a href="index.html">campground finder</a> for live weather at your destination before you finalize what to pack.</p>
+</footer>
+<script>
+// ---------------- Data ----------------
+// seasons: subset of ["spring","summer","fall","winter"], or "all" for year-round items
+const categories = [
+{
+name:"Shelter & Sleep",
+icon:"⛺",
+items:[
+{name:"Tent + stakes + guy lines", seasons:"all", essential:true},
+{name:"Footprint / ground tarp", seasons:"all", essential:true},
+{name:"Sleeping bag (rated for the season)", seasons:"all", essential:true},
+{name:"Sleeping pad or air mattress", seasons:"all", essential:true},
+{name:"Pillow", seasons:"all", essential:false},
+{name:"Extra tent stakes (soft or muddy ground)", seasons:["spring"], essential:false},
+{name:"Tent fan or portable fan", seasons:["summer"], essential:false},
+{name:"Cold-weather sleeping bag liner", seasons:["winter","fall"], essential:false},
+{name:"Insulated sleeping pad (higher R-value)", seasons:["winter"], essential:false},
+{name:"Extra tarp for rain fly reinforcement", seasons:["spring","fall"], essential:false},
+]
+},
+{
+name:"Cooking & Food",
+icon:"🍳",
+items:[
+{name:"Camp stove + fuel", seasons:"all", essential:true},
+{name:"Cookware (pot, pan, utensils)", seasons:"all", essential:true},
+{name:"Cooler with ice", seasons:"all", essential:true},
+{name:"Water containers / hydration reservoir", seasons:"all", essential:true},
+{name:"Matches or lighter (waterproof)", seasons:"all", essential:true},
+{name:"Trash bags", seasons:"all", essential:true},
+{name:"Extra water (heat increases needs)", seasons:["summer"], essential:false},
+{name:"Insulated food storage (prevent freezing)", seasons:["winter"], essential:false},
+{name:"Extra propane/fuel canisters (cold reduces efficiency)", seasons:["winter","fall"], essential:false},
+{name:"Bear canister or bear-proof food storage", seasons:"all", essential:false},
+]
+},
+{
+name:"Clothing",
+icon:"🧥",
+items:[
+{name:"Moisture-wicking base layers", seasons:"all", essential:true},
+{name:"Extra socks", seasons:"all", essential:true},
+{name:"Sturdy closed-toe footwear", seasons:"all", essential:true},
+{name:"Rain jacket", seasons:"all", essential:true},
+{name:"Sun hat + sunglasses", seasons:["summer","spring"], essential:false},
+{name:"Lightweight, breathable clothing", seasons:["summer"], essential:false},
+{name:"Swimwear", seasons:["summer"], essential:false},
+{name:"Insulated jacket / puffy layer", seasons:["winter","fall"], essential:false},
+{name:"Thermal base layers", seasons:["winter"], essential:false},
+{name:"Warm hat, gloves, and wool socks", seasons:["winter"], essential:false},
+{name:"Waterproof boots", seasons:["spring","winter"], essential:false},
+{name:"Layered mid-weight clothing (variable temps)", seasons:["fall","spring"], essential:false},
+]
+},
+{
+name:"Safety & Health",
+icon:"🩹",
+items:[
+{name:"First aid kit", seasons:"all", essential:true},
+{name:"Headlamp or flashlight + batteries", seasons:"all", essential:true},
+{name:"Multi-tool or knife", seasons:"all", essential:true},
+{name:"Personal medications", seasons:"all", essential:true},
+{name:"Map and/or offline navigation app", seasons:"all", essential:true},
+{name:"Sunscreen", seasons:["summer","spring"], essential:false},
+{name:"Insect repellent", seasons:["summer","spring"], essential:false},
+{name:"Hand and toe warmers", seasons:["winter"], essential:false},
+{name:"Emergency blanket", seasons:["winter","fall"], essential:false},
+{name:"Extra hydration for heat exposure", seasons:["summer"], essential:false},
+]
+},
+{
+name:"Site & Tools",
+icon:"🪓",
+items:[
+{name:"Camp chairs", seasons:"all", essential:true},
+{name:"Camp table (if site lacks one)", seasons:"all", essential:false},
+{name:"Rope or paracord", seasons:"all", essential:true},
+{name:"Duct tape", seasons:"all", essential:false},
+{name:"Firewood or firestarter", seasons:"all", essential:true},
+{name:"Portable shade canopy", seasons:["summer"], essential:false},
+{name:"Snow shovel (clearing site/tent)", seasons:["winter"], essential:false},
+{name:"Extra tarps for mud management", seasons:["spring"], essential:false},
+{name:"Leaf/debris rake for site cleanup", seasons:["fall"], essential:false},
+]
+},
+{
+name:"Comfort & Extras",
+icon:"🎒",
+items:[
+{name:"Camp towel", seasons:"all", essential:false},
+{name:"Toiletries", seasons:"all", essential:true},
+{name:"Portable power bank", seasons:"all", essential:false},
+{name:"Camera or binoculars", seasons:"all", essential:false},
+{name:"Cooling towel or portable fan", seasons:["summer"], essential:false},
+{name:"Thermos for hot drinks", seasons:["winter","fall"], essential:false},
+{name:"Extra blankets", seasons:["winter","fall"], essential:false},
+{name:"Waterproof dry bag for gear", seasons:["spring"], essential:false},
+]
+},
+];
+
+// ---------------- Render ----------------
+const categoriesEl = document.getElementById('categories');
+const STORAGE_KEY = 'trailmark-packing-checked-v1';
+
+function loadChecked(){
+try{
+return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+}catch(e){ return {}; }
+}
+function saveChecked(state){
+try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+}
+let checkedState = loadChecked();
+
+function itemId(catName, itemName){
+return (catName + '::' + itemName).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+}
+
+function seasonLabel(s){
+return {spring:"Spring",summer:"Summer",fall:"Fall",winter:"Winter"}[s] || s;
+}
+
+function renderCategories(){
+categoriesEl.innerHTML = categories.map(cat => {
+const rows = cat.items.map(item => {
+const id = itemId(cat.name, item.name);
+const isChecked = !!checkedState[id];
+const seasonChips = item.seasons === "all"
+? '<span class="season-chip">All-season</span>'
+: item.seasons.map(s => `<span class="season-chip">${seasonLabel(s)}</span>`).join('');
+const essentialChip = item.essential ? '<span class="essential-chip">Core</span>' : '';
+return `
+<li class="item-row${isChecked ? ' checked' : ''}" data-id="${id}" data-seasons='${JSON.stringify(item.seasons)}'>
+<input type="checkbox" id="chk-${id}" ${isChecked ? 'checked' : ''}>
+<label class="item-text" for="chk-${id}">
+<div class="item-name">${item.name}</div>
+<div class="item-seasons">${essentialChip}${seasonChips}</div>
+</label>
+</li>`;
+}).join('');
+return `
+<div class="cat-card">
+<div class="cat-head">
+<span class="icon">${cat.icon}</span>
+<h3>${cat.name}</h3>
+<span class="cat-count mono" data-cat-count="${cat.name}"></span>
+</div>
+<ul class="item-list">${rows}</ul>
+</div>`;
+}).join('');
+}
+
+function itemMatchesSeason(seasons, activeSeason){
+if(activeSeason === "all") return true;
+if(seasons === "all") return true;
+return seasons.includes(activeSeason);
+}
+
+function applySeasonFilter(activeSeason){
+let visibleTotal = 0, visibleChecked = 0;
+document.querySelectorAll('.item-row').forEach(row=>{
+const seasons = JSON.parse(row.dataset.seasons);
+const match = itemMatchesSeason(seasons, activeSeason);
+row.dataset.hidden = match ? "false" : "true";
+if(match){
+visibleTotal++;
+if(row.classList.contains('checked')) visibleChecked++;
+}
+});
+document.querySelectorAll('.cat-card').forEach(card=>{
+const visibleRows = [...card.querySelectorAll('.item-row')].filter(r => r.dataset.hidden === "false");
+const countEl = card.querySelector('[data-cat-count]');
+const checkedCount = visibleRows.filter(r => r.classList.contains('checked')).length;
+countEl.textContent = `${checkedCount}/${visibleRows.length} packed`;
+card.style.display = visibleRows.length ? "" : "none";
+});
+document.getElementById('progressReadout').textContent = `${visibleChecked} of ${visibleTotal} items packed`;
+}
+
+let currentSeason = "all";
+
+function wireEvents(){
+categoriesEl.addEventListener('change', (e)=>{
+if(e.target.matches('input[type="checkbox"]')){
+const row = e.target.closest('.item-row');
+const id = row.dataset.id;
+checkedState[id] = e.target.checked;
+row.classList.toggle('checked', e.target.checked);
+saveChecked(checkedState);
+applySeasonFilter(currentSeason);
+}
+});
+
+document.querySelectorAll('.season-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+document.querySelectorAll('.season-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+currentSeason = btn.dataset.season;
+applySeasonFilter(currentSeason);
+});
+});
+
+document.getElementById('resetChecks').addEventListener('click', ()=>{
+checkedState = {};
+saveChecked(checkedState);
+document.querySelectorAll('.item-row').forEach(row=>{
+row.classList.remove('checked');
+row.querySelector('input[type="checkbox"]').checked = false;
+});
+applySeasonFilter(currentSeason);
+});
+}
+
+renderCategories();
+wireEvents();
+applySeasonFilter(currentSeason);
+
+// ---------------- Hero background photo (reuse same Commons source as the campgrounds page) ----------------
+async function searchCommonsWide(query, limit, width){
+const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*`
++ `&generator=search&gsrnamespace=6&gsrlimit=${limit}`
++ `&gsrsearch=${encodeURIComponent('filetype:bitmap ' + query)}`
++ `&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=${width}`;
+const res = await fetch(url);
+const data = await res.json();
+const pages = data && data.query && data.query.pages ? Object.values(data.query.pages) : [];
+return pages
+.filter(p => p.imageinfo && p.imageinfo[0] && p.imageinfo[0].thumburl)
+.map(p => {
+const info = p.imageinfo[0];
+return { url: info.thumburl, width: info.width, height: info.height };
+});
+}
+async function loadHeroBackground(){
+const queries = ["camping gear flat lay", "backpacking equipment packed", "campsite tent morning"];
+for(const q of queries){
+try{
+const results = await searchCommonsWide(q, 8, 1920);
+const landscape = results.find(r => r.width && r.height && r.width > r.height * 1.3);
+const pick = landscape || results[0];
+if(pick){
+const heroPhoto = document.getElementById('heroPhoto');
+const heroEl = document.getElementById('heroHeader');
+heroPhoto.style.backgroundImage = `url("${pick.url}")`;
+heroEl.classList.add('bg-loaded');
+return;
+}
+}catch(e){ /* try next query */ }
+}
+}
+loadHeroBackground();
+</script>
+</body>
+</html>
